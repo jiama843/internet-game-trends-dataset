@@ -1,0 +1,302 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix ex: <http://example.com/ns#>.
+
+ex:GameInfoMap
+    rr:logicalTable [ rr:tableName "GameInfo" ];
+    rr:subjectMap [
+        rr:class ex:Game;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:name;
+        rr:objectMap [ rr:column "Name" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:developer;
+        rr:objectMap [ rr:column "Developer" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:publisher;
+        rr:objectMap [ rr:column "Publisher" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:perspective;
+        rr:objectMap [ rr:column "Perspective of the game (3rd person, isometric etc.)" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_engine;
+        rr:objectMap [ rr:column "Game Engine" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:Genres;
+        rr:objectMap [
+            rr:parentTriplesMap ex:GenreMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "game_id";
+            ];
+        ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:Theme;
+        rr:objectMap [
+            rr:parentTriplesMap ex:ThemeMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "game_id";
+            ];
+        ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:GameMode;
+        rr:objectMap [
+            rr:parentTriplesMap ex:GameModeMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "game_id";
+            ];
+        ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:Rating;
+        rr:objectMap [
+            rr:parentTriplesMap ex:RatingMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "game_id";
+            ];
+        ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:SteamInfo;
+        rr:objectMap [
+            rr:parentTriplesMap ex:SteamInfoMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "game_id";
+            ];
+        ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:EpicInfo;
+        rr:objectMap [
+            rr:parentTriplesMap ex:EpicInfoMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "game_id";
+            ];
+        ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:SteamDailyStats;
+        rr:objectMap [
+            rr:parentTriplesMap ex:SteamDailyStatsMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "game_id";
+            ];
+        ];
+    ].
+
+ex:RatingMap
+    rr:logicalTable [ rr:tableName "Ratings" ];
+    rr:subjectMap [
+        rr:class ex:Rating;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_id;
+        rr:objectMap [ rr:column "Game ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:score;
+        rr:objectMap [ rr:column "Score for the game" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:score_type;
+        rr:objectMap [ rr:column "Type of scoring system (STAR, SCALE_10, SCALE_100)" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:source;
+        rr:objectMap [ rr:column "Source which published the rating" ];
+    ].
+
+ex:GenreMap
+    rr:logicalTable [ rr:tableName "Genres" ];
+    rr:subjectMap [
+        rr:class ex:Genres;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_id;
+        rr:objectMap [ rr:column "Game ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:name;
+        rr:objectMap [ rr:column "Name of the genre" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:description;
+        rr:objectMap [ rr:column "Description of the genre" ];
+    ].
+
+ex:ThemeMap
+    rr:logicalTable [ rr:tableName "Themes" ];
+    rr:subjectMap [
+        rr:class ex:Theme;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_id;
+        rr:objectMap [ rr:column "Game ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:name;
+        rr:objectMap [ rr:column "Name of the theme" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:description;
+        rr:objectMap [ rr:column "Description of the theme" ];
+    ].
+
+ex:GameModeMap
+    rr:logicalTable [ rr:tableName "GameModes" ];
+    rr:subjectMap [
+        rr:class ex:GameMode;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_id;
+        rr:objectMap [ rr:column "Game ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:name;
+        rr:objectMap [ rr:column "Name of the game mode" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:description;
+        rr:objectMap [ rr:column "Description of the game mode" ];
+    ].
+
+ex:SteamInfoMap
+    rr:logicalTable [ rr:tableName "SteamInfo" ];
+    rr:subjectMap [
+        rr:class ex:SteamInfo;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_id;
+        rr:objectMap [ rr:column "Game ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:owners_est;
+        rr:objectMap [ rr:column "Estimated number of owners" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:positive_reviews;
+        rr:objectMap [ rr:column "Positive reviews count" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:negative_reviews;
+        rr:objectMap [ rr:column "Negative reviews count" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:initial_price_cents;
+        rr:objectMap [ rr:column "Initial price cents" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:effective_date;
+        rr:objectMap [ rr:column "Release date in store" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:SteamDailyStats;
+        rr:objectMap [
+            rr:parentTriplesMap ex:SteamDailyStatsMap;
+            rr:joinCondition [
+                rr:child "id";
+                rr:parent "steam_info_id";
+            ];
+        ];
+    ].
+
+ex:SteamDailyStatsMap
+    rr:logicalTable [ rr:tableName "SteamDailyStats" ];
+    rr:subjectMap [
+        rr:class ex:SteamDailyStats;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_id;
+        rr:objectMap [ rr:column "Game ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:steam_info_id;
+        rr:objectMap [ rr:column "Steam Info ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:peak_ccu;
+        rr:objectMap [ rr:column "Peak Concurrent Users" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:current_price;
+        rr:objectMap [ rr:column "Current Price" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:discount;
+        rr:objectMap [ rr:column "Discount for the time range" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:start_date;
+        rr:objectMap [ rr:column "Start date of record" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:end_date;
+        rr:objectMap [ rr:column "End date of record" ];
+    ].
+
+ex:EpicInfoMap
+    rr:logicalTable [ rr:tableName "EpicInfo" ];
+    rr:subjectMap [
+        rr:class ex:EpicInfo;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:id;
+        rr:objectMap [ rr:column "ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:game_id;
+        rr:objectMap [ rr:column "Game ID" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:initial_price_cents;
+        rr:objectMap [ rr:column "Initial price cents" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:age_rating;
+        rr:objectMap [ rr:column "Age Rating" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ex:effective_date;
+        rr:objectMap [ rr:column "Release date in store" ];
+    ].
