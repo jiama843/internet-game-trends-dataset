@@ -1,0 +1,90 @@
+
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table GameInfo {
+  id bigint [primary key]
+  name varchar
+  developer varchar
+  publisher varchar
+  perspective varchar
+  game_engine varchar
+  release_date date
+}
+
+Table Rating {
+  id bigint [primary key]
+  game_id bigint [not null]
+  score numeric
+  score_type varchar
+  source varchar
+}
+
+Table Genres {
+  id bigint [primary key]
+  game_id bigint [not null]
+  name varchar
+  description varchar
+}
+
+Table Themes {
+  id bigint [primary key]
+  game_id bigint [not null]
+  name varchar
+  description varchar
+}
+
+Table GameModes {
+  id bigint [primary key]
+  game_id bigint [not null]
+  name varchar
+  description varchar
+}
+
+Table Perspectives {
+  id bigint [primary key]
+  game_id bigint [not null]
+  name varchar
+  description varchar
+}
+
+Table SteamInfo {
+  id bigint [primary key]
+  game_id bigint [not null]
+  owners_est integer
+  positive_reviews integer
+  negative_reviews integer
+  initial_price_cents integer
+  effective_date date
+}
+
+Table SteamDailyStats {
+  id bigint [primary key]
+  game_id bigint [not null]
+  steam_info_id bigint [not null]
+  peak_ccu integer
+  current_price integer
+  discount integer
+  start_date date
+  end_date date
+}
+
+Table EpicInfo {
+  id bigint [primary key]
+  game_id bigint [not null]
+  initial_price_cents integer
+  age_rating varchar
+  effective_date date
+}
+
+Ref: Rating.game_id > GameInfo.id
+Ref: Genres.game_id > GameInfo.id
+Ref: Themes.game_id > GameInfo.id
+Ref: GameModes.game_id > GameInfo.id
+Ref: Perspectives.game_id > GameInfo.id
+
+Ref: SteamInfo.game_id - GameInfo.id
+Ref: EpicInfo.game_id - GameInfo.id
+
+Ref: SteamDailyStats.steam_info_id > SteamInfo.id
+Ref: SteamDailyStats.game_id > GameInfo.id
