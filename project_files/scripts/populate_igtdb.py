@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Database configuration
 DB_FILE = 'game_trends.db'
-JSON_FILE = '../data/igdb_games_enriched_final.json'
+JSON_FILE = 'igdb_games_enriched_final.json'
 
 def create_schema(conn: duckdb.DuckDBPyConnection):
     """

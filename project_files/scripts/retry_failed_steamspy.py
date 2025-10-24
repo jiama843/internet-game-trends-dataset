@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 STEAMSPY_BASE_URL = 'https://steamspy.com/api'
 REQUEST_DELAY = 0.25  # Delay between API requests
 
-def load_failed_steam_ids(failed_file: str = '../data/failed_steamspy_fetches.json') -> List[int]:
+def load_failed_steam_ids(failed_file: str = 'data/failed_steamspy_fetches.json') -> List[int]:
     """Load failed Steam IDs from JSON file."""
     try:
         with open(failed_file, 'r') as f:
@@ -33,7 +33,7 @@ def load_failed_steam_ids(failed_file: str = '../data/failed_steamspy_fetches.js
         logger.error(f"Failed to load failed Steam IDs: {e}")
         return []
 
-def load_enriched_games(enriched_file: str = '../data/igdb_games_enriched.json') -> List[Dict[str, Any]]:
+def load_enriched_games(enriched_file: str = 'data/igdb_games_enriched.json') -> List[Dict[str, Any]]:
     """Load enriched IGDB games data."""
     try:
         with open(enriched_file, 'r', encoding='utf-8') as f:
@@ -123,7 +123,7 @@ def retry_failed_fetches(failed_steam_ids: List[int], enriched_games: List[Dict[
     
     return enriched_games, still_failed
 
-def save_updated_games(enriched_games: List[Dict[str, Any]], output_file: str = '../data/igdb_games_enriched.json'):
+def save_updated_games(enriched_games: List[Dict[str, Any]], output_file: str = 'data/igdb_games_enriched.json'):
     """Save updated enriched games data."""
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
@@ -132,7 +132,7 @@ def save_updated_games(enriched_games: List[Dict[str, Any]], output_file: str = 
     except Exception as e:
         logger.error(f"Failed to save updated data: {e}")
 
-def save_still_failed(still_failed: List[int], output_file: str = '../data/failed_steamspy_fetches.json'):
+def save_still_failed(still_failed: List[int], output_file: str = 'data/failed_steamspy_fetches.json'):
     """Save still failed Steam IDs."""
     try:
         with open(output_file, 'w') as f:

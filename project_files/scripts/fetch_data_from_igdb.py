@@ -169,7 +169,7 @@ def main():
         
         if games:
             # Save to JSON file
-            controller.save_to_json(games, '../data/igdb_games.json')
+            controller.save_to_json(games, 'data/igdb_games.json')
             
             # Print summary
             logger.info(f"Fetched {len(games)} games successfully!")

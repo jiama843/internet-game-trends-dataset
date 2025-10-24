@@ -172,8 +172,8 @@ def enrich_igdb_with_epic_data(igdb_games: List[Dict[str, Any]],
         logger.info(f"Batch complete: enriched {batch_enriched}/{len(batch_games)} games. Total: {epic_enriched_count}")
         
         # Save progress after each batch
-        save_enriched_data(enriched_games, output_file='../data/igdb_games_enriched_final.json')
-        save_failed_fetches(failed_fetches, output_file='../data/failed_epic_fetches.json')
+        save_enriched_data(enriched_games, output_file='data/igdb_games_enriched_final.json')
+        save_failed_fetches(failed_fetches, output_file='data/failed_epic_fetches.json')
     
     logger.info(f"Enrichment complete! {epic_enriched_count}/{len(enriched_games)} games enriched with Epic data")
     
@@ -269,7 +269,7 @@ if __name__ == "__main__":
     
     # Save final results
     if enriched_games:
-        save_enriched_data(enriched_games, output_file='../data/igdb_games_enriched_final.json')
+        save_enriched_data(enriched_games, output_file='data/igdb_games_enriched_final.json')
         save_failed_fetches(failed_fetches)
         print_enrichment_summary(enriched_games, failed_fetches)
     else:
