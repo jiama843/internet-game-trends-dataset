@@ -137,7 +137,7 @@ class IGDBController:
         logger.info(f"Successfully fetched {len(all_games)} games")
         return all_games
     
-    def save_to_json(self, data: List[Dict[Any, Any]], filename: str = 'igdb_top_games.json'):
+    def save_to_json(self, data: List[Dict[Any, Any]], filename: str = 'data/igdb_games.json'):
         """
         Save fetched data to JSON file.
         
@@ -169,7 +169,7 @@ def main():
         
         if games:
             # Save to JSON file
-            controller.save_to_json(games, 'igdb_games.json')
+            controller.save_to_json(games, 'data/igdb_games.json')
             
             # Print summary
             logger.info(f"Fetched {len(games)} games successfully!")

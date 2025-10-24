@@ -44,7 +44,7 @@ def load_igdb_games(igdb_games_file: str = 'igdb_games.json') -> List[Dict[str, 
         logger.error(f"Failed to load IGDB games: {e}")
         return []
 
-def load_steam_apps(steam_applist_file: str = 'steam_applist.json') -> Dict[int, Dict[str, Any]]:
+def load_steam_apps(steam_applist_file: str = 'data/steam_applist.json') -> Dict[int, Dict[str, Any]]:
     """
     Load Steam app list and create a dictionary mapping app IDs to app data.
     
@@ -171,13 +171,13 @@ def enrich_igdb_with_steam_data(igdb_games: List[Dict[str, Any]],
     logger.info(f"Enrichment complete! {steam_enriched_count}/{len(games_to_process)} games enriched with Steam data")
 
     if failed_steam_ids:
-        with open('failed_steamspy_fetches.json', 'w') as f:
+        with open('data/failed_steamspy_fetches.json', 'w') as f:
             json.dump(failed_steam_ids, f)
     
     return enriched_games
 
 def save_enriched_data(enriched_games: List[Dict[str, Any]], 
-                      output_file: str = 'igdb_games_enriched.json'):
+                      output_file: str = 'data/igdb_games_enriched.json'):
     """
     Save enriched IGDB games data to JSON file.
     
