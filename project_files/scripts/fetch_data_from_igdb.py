@@ -3,12 +3,7 @@ import json
 import time
 import requests
 from typing import List, Dict, Any
-import logging
 from dotenv import load_dotenv
-
-# # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -65,19 +60,19 @@ class IGDBController:
             List[Dict]: List of game data
         """
         if not self.access_token:
-            logger.error("Not authenticated. Call authenticate() first.")
+            print("Not authenticated. Call authenticate() first.")
             return []
         
         all_games = []
         batch_size = min(batch_size, 500)
         offset = 0
         
-        logger.info(f"Fetching games (max: {'unlimited' if max_games is None else max_games})...")
+        print(f"Fetching games (max: {'unlimited' if max_games is None else max_games})...")
         
         while True:
             # Stop if we've reached the maximum number of games
             if max_games is not None and len(all_games) >= max_games:
-                logger.info(f"Reached maximum limit of {max_games} games")
+                print(f"Reached maximum limit of {max_games} games")
                 break
                 
             # Calculate batch size for this request
@@ -113,12 +108,12 @@ class IGDBController:
              offset {offset};
              """
             
-            logger.info(f"Fetching batch {offset//batch_size + 1}: games {offset+1}-{offset+current_batch_size}")
+            print(f"Fetching batch {offset//batch_size + 1}: games {offset+1}-{offset+current_batch_size}")
             
             games_batch = self.make_api_request('games', query)
             
             if not games_batch:
-                logger.warning(f"No games returned for offset {offset}")
+                print(f"No games returned for offset {offset}")
                 break
             
             all_games.extend(games_batch)
@@ -128,13 +123,13 @@ class IGDBController:
             
             # If we got fewer games than requested, we've reached the end
             if len(games_batch) < current_batch_size:
-                logger.info("Received fewer games than requested, likely reached end of data")
+                print("Received fewer games than requested, likely reached end of data")
                 break
             
             # Move to next batch
             offset += current_batch_size
         
-        logger.info(f"Successfully fetched {len(all_games)} games")
+        print(f"Successfully fetched {len(all_games)} games")
         return all_games
     
     def save_to_json(self, data: List[Dict[Any, Any]], filename: str):
@@ -148,9 +143,9 @@ class IGDBController:
         try:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            logger.info(f"Data saved to {filename}")
+            print(f"Data saved to {filename}")
         except Exception as e:
-            logger.error(f"Failed to save data: {e}")
+            print(f"Failed to save data: {e}")
 
 def main():
     controller = IGDBController(CLIENT_ID, CLIENT_SECRET, CLIENT_ACCESS_TOKEN)
@@ -172,16 +167,16 @@ def main():
             controller.save_to_json(games, 'data/igdb_games.json')
             
             # Print summary
-            logger.info(f"Fetched {len(games)} games successfully!")
-            logger.info("Sample of top 5 games:")
+            print(f"Fetched {len(games)} games successfully!")
+            print("Sample of top 5 games:")
             for i, game in enumerate(games[:5]):
                 name = game.get('name', 'Unknown')
-                logger.info(f"{i+1}. {name}")
+                print(f"{i+1}. {name}")
         else:
-            logger.error("No games were fetched")
+            print("No games were fetched")
             
     except Exception as e:
-        logger.error(f"Error during execution: {e}")
+        print(f"Error during execution: {e}")
 
 if __name__ == '__main__':
     main()

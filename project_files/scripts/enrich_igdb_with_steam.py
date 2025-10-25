@@ -9,20 +9,15 @@ For each IGDB game that has a corresponding Steam app ID, this script:
 """
 
 import json
-import logging
 import requests
 import time
 from typing import List, Dict, Any, Optional
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 # SteamSpy API configuration
 STEAMSPY_BASE_URL = 'https://steamspy.com/api.php'
-REQUEST_DELAY = 0.25  # Delay between API requests to be respectful
+REQUEST_DELAY = 0.05  # Delay between API requests to be respectful
 
-def load_igdb_games(igdb_games_file: str = 'igdb_games.json') -> List[Dict[str, Any]]:
+def load_igdb_games(igdb_games_file: str = 'data/igdb_games.json') -> List[Dict[str, Any]]:
     """
     Load IGDB games data.
     
@@ -32,16 +27,16 @@ def load_igdb_games(igdb_games_file: str = 'igdb_games.json') -> List[Dict[str, 
     Returns:
         List[Dict]: List of IGDB games
     """
-    logger.info("Loading IGDB games data...")
+    print("Loading IGDB games data...")
     try:
         with open(igdb_games_file, 'r', encoding='utf-8') as f:
             igdb_games = json.load(f)
         
-        logger.info(f"Loaded {len(igdb_games)} IGDB games")
+        print(f"Loaded {len(igdb_games)} IGDB games")
         return igdb_games
         
     except Exception as e:
-        logger.error(f"Failed to load IGDB games: {e}")
+        print(f"Failed to load IGDB games: {e}")
         return []
 
 def load_steam_apps(steam_applist_file: str = 'data/steam_applist.json') -> Dict[int, Dict[str, Any]]:
@@ -54,7 +49,7 @@ def load_steam_apps(steam_applist_file: str = 'data/steam_applist.json') -> Dict
     Returns:
         Dict[int, Dict]: Dictionary mapping Steam app IDs to app data
     """
-    logger.info("Loading Steam app list...")
+    print("Loading Steam app list...")
     try:
         with open(steam_applist_file, 'r', encoding='utf-8') as f:
             steam_data = json.load(f)
@@ -62,11 +57,11 @@ def load_steam_apps(steam_applist_file: str = 'data/steam_applist.json') -> Dict
         steam_apps = steam_data['applist']['apps']
         steam_apps_dict = {app['appid']: app for app in steam_apps}
         
-        logger.info(f"Loaded {len(steam_apps_dict)} Steam apps")
+        print(f"Loaded {len(steam_apps_dict)} Steam apps")
         return steam_apps_dict
         
     except Exception as e:
-        logger.error(f"Failed to load Steam app list: {e}")
+        print(f"Failed to load Steam app list: {e}")
         return {}
 
 def get_steamspy_data(app_id: int) -> Optional[Dict[str, Any]]:
@@ -93,17 +88,17 @@ def get_steamspy_data(app_id: int) -> Optional[Dict[str, Any]]:
         if data and data.get('appid') == app_id:
             return data
         else:
-            logger.debug(f"No valid data returned for app ID {app_id}")
+            # print(f"No valid data returned for app ID {app_id}")
             return None
             
     except requests.exceptions.RequestException as e:
-        logger.warning(f"Failed to fetch SteamSpy data for app ID {app_id}: {e}")
+        print(f"Failed to fetch SteamSpy data for app ID {app_id}: {e}")
         return None
     except json.JSONDecodeError as e:
-        logger.warning(f"Invalid JSON response for app ID {app_id}: {e}")
+        print(f"Invalid JSON response for app ID {app_id}: {e}")
         return None
     except Exception as e:
-        logger.warning(f"Unexpected error fetching data for app ID {app_id}: {e}")
+        print(f"Unexpected error fetching data for app ID {app_id}: {e}")
         return None
 
 def find_steam_app_id(igdb_game: Dict[str, Any]) -> Optional[int]:
@@ -145,11 +140,11 @@ def enrich_igdb_with_steam_data(igdb_games: List[Dict[str, Any]],
     steam_enriched_count = 0
     games_to_process = igdb_games
     
-    logger.info(f"Processing {len(games_to_process)} IGDB games...")
+    print(f"Processing {len(games_to_process)} IGDB games...")
     
     for i, igdb_game in enumerate(games_to_process):
-        if i % 500 == 0:
-            logger.info(f"Processed {i}/{len(games_to_process)} games, enriched {steam_enriched_count} with Steam data")
+        if i % 500 == 0 and i > 0:
+            print(f"Processed {i}/{len(games_to_process)} games, enriched {steam_enriched_count} with Steam data")
         
         enriched_game = igdb_game.copy()
         steam_app_id = find_steam_app_id(igdb_game)
@@ -160,7 +155,7 @@ def enrich_igdb_with_steam_data(igdb_games: List[Dict[str, Any]],
             if steamspy_data:
                 enriched_game['steamInfo'] = steamspy_data
                 steam_enriched_count += 1
-                logger.debug(f"Enriched '{igdb_game.get('name', 'Unknown')}' with Steam data (App ID: {steam_app_id})")
+                # print(f"Enriched '{igdb_game.get('name', 'Unknown')}' with Steam data (App ID: {steam_app_id})")
             else:
                 failed_steam_ids.append(steam_app_id)
 
@@ -168,7 +163,7 @@ def enrich_igdb_with_steam_data(igdb_games: List[Dict[str, Any]],
         
         enriched_games.append(enriched_game)
     
-    logger.info(f"Enrichment complete! {steam_enriched_count}/{len(games_to_process)} games enriched with Steam data")
+    print(f"Enrichment complete! {steam_enriched_count}/{len(games_to_process)} games enriched with Steam data")
 
     if failed_steam_ids:
         with open('data/failed_steamspy_fetches.json', 'w') as f:
@@ -177,7 +172,7 @@ def enrich_igdb_with_steam_data(igdb_games: List[Dict[str, Any]],
     return enriched_games
 
 def save_enriched_data(enriched_games: List[Dict[str, Any]], 
-                      output_file: str = 'data/igdb_games_enriched.json'):
+                      output_file: str = 'data/igdb_games_enriched_steam.json'):
     """
     Save enriched IGDB games data to JSON file.
     
@@ -188,9 +183,9 @@ def save_enriched_data(enriched_games: List[Dict[str, Any]],
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(enriched_games, f, indent=2, ensure_ascii=False)
-        logger.info(f"Enriched data saved to {output_file}")
+        print(f"Enriched data saved to {output_file}")
     except Exception as e:
-        logger.error(f"Failed to save enriched data: {e}")
+        print(f"Failed to save enriched data: {e}")
 
 def print_enrichment_summary(enriched_games: List[Dict[str, Any]]):
     """
@@ -231,17 +226,17 @@ def main():
     # Load data
     igdb_games = load_igdb_games()
     if not igdb_games:
-        logger.error("Failed to load IGDB games. Exiting.")
+        print("Failed to load IGDB games. Exiting.")
         return
     
     steam_apps_dict = load_steam_apps()
     if not steam_apps_dict:
-        logger.error("Failed to load Steam apps. Exiting.")
+        print("Failed to load Steam apps. Exiting.")
         return
     
     has_external_games = any('external_games' in game for game in igdb_games[:10])
     if not has_external_games:
-        logger.error("IGDB data does not contain external_games field. Cannot find Steam app IDs.")
+        print("IGDB data does not contain external_games field. Cannot find Steam app IDs.")
         return
     
     print(f"\nFound {len(igdb_games):,} IGDB games to process.")
@@ -254,7 +249,7 @@ def main():
         print_enrichment_summary(enriched_games)
         
     else:
-        logger.error("No games were processed successfully.")
+        print("No games were processed successfully.")
 
 if __name__ == '__main__':
     main()

@@ -14,20 +14,15 @@ Games that simply don't exist on Epic Store are not considered failures.
 from epicstore_api import EpicGamesStoreAPI, OfferData
 import json
 import time
-import logging
 import os
 from typing import List, Dict, Any, Optional
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 # Epic API configuration
 api = EpicGamesStoreAPI()
-REQUEST_DELAY = 0.25  # Delay between API requests to be respectful
-BATCH_SIZE = 100  # Number of games to process per batch (saves after each batch)
+REQUEST_DELAY = 0.05  # Delay between API requests to be respectful
+BATCH_SIZE = 500  # Number of games to process per batch (saves after each batch)
 
-def load_igdb_games(igdb_games_file: str = 'igdb_games_enriched.json') -> List[Dict[str, Any]]:
+def load_igdb_games(igdb_games_file: str = 'data/igdb_games_enriched_steam.json') -> List[Dict[str, Any]]:
     """
     Load IGDB games data from the enriched file.
     
@@ -37,17 +32,17 @@ def load_igdb_games(igdb_games_file: str = 'igdb_games_enriched.json') -> List[D
     Returns:
         List[Dict]: List of IGDB games
     """
-    logger.info("Loading IGDB games data...")
+    print("Loading IGDB games data...")
     
     try:
         with open(igdb_games_file, 'r', encoding='utf-8') as f:
             igdb_games = json.load(f)
         
-        logger.info(f"Loaded {len(igdb_games)} IGDB games from {igdb_games_file}")
+        print(f"Loaded {len(igdb_games)} IGDB games from {igdb_games_file}")
         return igdb_games
         
     except Exception as e:
-        logger.error(f"Failed to load IGDB games from {igdb_games_file}: {e}")
+        print(f"Failed to load IGDB games from {igdb_games_file}: {e}")
         return []
 
 def get_epic_data(game_name: str) -> tuple[Optional[Dict[str, Any]], bool]:
@@ -68,7 +63,7 @@ def get_epic_data(game_name: str) -> tuple[Optional[Dict[str, Any]], bool]:
         response = api.fetch_store_games(count=1, keywords=game_name)
         
         if not response:
-            logger.debug(f"No response for game '{game_name}' - game doesn't exist on Epic")
+            # print(f"No response for game '{game_name}' - game doesn't exist on Epic")
             return None, False  # Not an error, just doesn't exist
         
         # Navigate to the game elements
@@ -81,11 +76,11 @@ def get_epic_data(game_name: str) -> tuple[Optional[Dict[str, Any]], bool]:
                     # Return the first matching game
                     return elements[0], False
         
-        logger.debug(f"No matching game found on Epic for '{game_name}'")
+        # print(f"No matching game found on Epic for '{game_name}'")
         return None, False  # Not an error, just doesn't exist
             
     except Exception as e:
-        logger.warning(f"API error fetching Epic data for '{game_name}': {e}")
+        print(f"API error fetching Epic data for '{game_name}': {e}")
         return None, True  # This is an actual error/failed fetch
 
 def process_batch(batch_games: List[tuple[int, Dict[str, Any]]], 
@@ -109,12 +104,12 @@ def process_batch(batch_games: List[tuple[int, Dict[str, Any]]],
         
         # Skip if already has epicInfo
         if 'epicInfo' in igdb_game:
-            logger.debug(f"Skipping '{game_name}' - already has epicInfo")
+            # print(f"Skipping '{game_name}' - already has epicInfo")
             enriched_count += 1
             continue
         
         if not game_name:
-            logger.debug(f"Skipping game at index {i} - no name found")
+            # print(f"Skipping game at index {i} - no name found")
             continue
         
         # Fetch Epic data
@@ -123,7 +118,7 @@ def process_batch(batch_games: List[tuple[int, Dict[str, Any]]],
         if epic_data:
             enriched_games[i]['epicInfo'] = epic_data
             enriched_count += 1
-            logger.debug(f"Enriched '{game_name}' with Epic data")
+            # print(f"Enriched '{game_name}' with Epic data")
         elif is_error:
             failed_fetches.append({
                 'igdb_id': igdb_game.get('id'),
@@ -131,7 +126,7 @@ def process_batch(batch_games: List[tuple[int, Dict[str, Any]]],
                 'index': i,
                 'reason': 'API error'
             })
-            logger.warning(f"Failed to fetch '{game_name}' - API error")
+            print(f"Failed to fetch '{game_name}' - API error")
         
         # Delay to prevent rate limiting
         time.sleep(REQUEST_DELAY)
@@ -154,13 +149,13 @@ def enrich_igdb_with_epic_data(igdb_games: List[Dict[str, Any]],
     failed_fetches = []
     epic_enriched_count = 0
     
-    logger.info(f"Processing {len(igdb_games)} IGDB games in batches of {BATCH_SIZE} (starting from index {start_index})...")
+    print(f"Processing {len(igdb_games)} IGDB games in batches of {BATCH_SIZE} (starting from index {start_index})...")
     
     # Process games in batches
     for batch_start in range(start_index, len(enriched_games), BATCH_SIZE):
         batch_end = min(batch_start + BATCH_SIZE, len(enriched_games))
         
-        logger.info(f"Processing batch {batch_start}-{batch_end} ({batch_end}/{len(enriched_games)} total)")
+        print(f"Processing batch {batch_start}-{batch_end} ({batch_end}/{len(enriched_games)} total)")
         
         # Collect games for this batch
         batch_games = [(i, enriched_games[i]) for i in range(batch_start, batch_end)]
@@ -169,13 +164,13 @@ def enrich_igdb_with_epic_data(igdb_games: List[Dict[str, Any]],
         batch_enriched = process_batch(batch_games, enriched_games, failed_fetches)
         epic_enriched_count += batch_enriched
         
-        logger.info(f"Batch complete: enriched {batch_enriched}/{len(batch_games)} games. Total: {epic_enriched_count}")
+        print(f"Batch complete: enriched {batch_enriched}/{len(batch_games)} games. Total: {epic_enriched_count}")
         
         # Save progress after each batch
         save_enriched_data(enriched_games, output_file='data/igdb_games_enriched_final.json')
         save_failed_fetches(failed_fetches, output_file='data/failed_epic_fetches.json')
     
-    logger.info(f"Enrichment complete! {epic_enriched_count}/{len(enriched_games)} games enriched with Epic data")
+    print(f"Enrichment complete! {epic_enriched_count}/{len(enriched_games)} games enriched with Epic data")
     
     return enriched_games, failed_fetches
 
@@ -191,9 +186,9 @@ def save_enriched_data(enriched_games: List[Dict[str, Any]],
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(enriched_games, f, indent=2, ensure_ascii=False)
-        logger.info(f"Enriched data saved to {output_file}")
+        print(f"Enriched data saved to {output_file}")
     except Exception as e:
-        logger.error(f"Failed to save enriched data: {e}")
+        print(f"Failed to save enriched data: {e}")
 
 def save_failed_fetches(failed_fetches: List[Dict[str, Any]], 
                        output_file: str = 'failed_epic_fetches.json'):
@@ -209,9 +204,9 @@ def save_failed_fetches(failed_fetches: List[Dict[str, Any]],
         try:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(failed_fetches, f, indent=2, ensure_ascii=False)
-            logger.info(f"Failed fetches saved to {output_file} ({len(failed_fetches)} API errors)")
+            print(f"Failed fetches saved to {output_file} ({len(failed_fetches)} API errors)")
         except Exception as e:
-            logger.error(f"Failed to save failed fetches: {e}")
+            print(f"Failed to save failed fetches: {e}")
 
 def print_enrichment_summary(enriched_games: List[Dict[str, Any]], 
                             failed_fetches: List[Dict[str, Any]]):
@@ -257,7 +252,7 @@ if __name__ == "__main__":
     # Load data
     igdb_games = load_igdb_games()
     if not igdb_games:
-        logger.error("Failed to load IGDB games. Exiting.")
+        print("Failed to load IGDB games. Exiting.")
         exit(1)
     
     print(f"\nFound {len(igdb_games):,} IGDB games to process.")
@@ -273,4 +268,4 @@ if __name__ == "__main__":
         save_failed_fetches(failed_fetches)
         print_enrichment_summary(enriched_games, failed_fetches)
     else:
-        logger.error("No games were processed successfully.")
+        print("No games were processed successfully.")

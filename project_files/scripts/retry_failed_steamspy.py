@@ -9,14 +9,9 @@ This script:
 """
 
 import json
-import logging
 import requests
 import time
 from typing import List, Dict, Any, Optional
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 # SteamSpy API configuration
 STEAMSPY_BASE_URL = 'https://steamspy.com/api'
@@ -27,10 +22,10 @@ def load_failed_steam_ids(failed_file: str = 'data/failed_steamspy_fetches.json'
     try:
         with open(failed_file, 'r') as f:
             failed_ids = json.load(f)
-        logger.info(f"Loaded {len(failed_ids)} failed Steam IDs")
+        print(f"Loaded {len(failed_ids)} failed Steam IDs")
         return failed_ids
     except Exception as e:
-        logger.error(f"Failed to load failed Steam IDs: {e}")
+        print(f"Failed to load failed Steam IDs: {e}")
         return []
 
 def load_enriched_games(enriched_file: str = 'data/igdb_games_enriched.json') -> List[Dict[str, Any]]:
@@ -38,10 +33,10 @@ def load_enriched_games(enriched_file: str = 'data/igdb_games_enriched.json') ->
     try:
         with open(enriched_file, 'r', encoding='utf-8') as f:
             games = json.load(f)
-        logger.info(f"Loaded {len(games)} enriched games")
+        print(f"Loaded {len(games)} enriched games")
         return games
     except Exception as e:
-        logger.error(f"Failed to load enriched games: {e}")
+        print(f"Failed to load enriched games: {e}")
         return []
 
 def get_steamspy_data(app_id: int) -> Optional[Dict[str, Any]]:
@@ -63,7 +58,7 @@ def get_steamspy_data(app_id: int) -> Optional[Dict[str, Any]]:
             return None
             
     except Exception as e:
-        logger.debug(f"Failed to fetch SteamSpy data for app ID {app_id}: {e}")
+        # print(f"Failed to fetch SteamSpy data for app ID {app_id}: {e}")
         return None
 
 def find_steam_app_id(igdb_game: Dict[str, Any]) -> Optional[int]:
@@ -92,11 +87,11 @@ def retry_failed_fetches(failed_steam_ids: List[int], enriched_games: List[Dict[
         if steam_app_id:
             steam_id_to_game_index[steam_app_id] = i
     
-    logger.info(f"Retrying {len(failed_steam_ids)} failed Steam IDs...")
+    print(f"Retrying {len(failed_steam_ids)} failed Steam IDs...")
     
     for i, steam_app_id in enumerate(failed_steam_ids):
         if i % 50 == 0:
-            logger.info(f"Processed {i}/{len(failed_steam_ids)} failed IDs, {success_count} successful")
+            print(f"Processed {i}/{len(failed_steam_ids)} failed IDs, {success_count} successful")
         
         # Find the corresponding game in enriched_games
         if steam_app_id in steam_id_to_game_index:
@@ -109,7 +104,7 @@ def retry_failed_fetches(failed_steam_ids: List[int], enriched_games: List[Dict[
                 # Update the game with Steam info
                 enriched_games[game_index]['steamInfo'] = steamspy_data
                 success_count += 1
-                logger.debug(f"Successfully fetched data for Steam ID {steam_app_id}")
+                # print(f"Successfully fetched data for Steam ID {steam_app_id}")
             else:
                 still_failed.append(steam_app_id)
             
@@ -118,8 +113,8 @@ def retry_failed_fetches(failed_steam_ids: List[int], enriched_games: List[Dict[
             # Steam ID not found in enriched games
             still_failed.append(steam_app_id)
     
-    logger.info(f"Retry complete! {success_count}/{len(failed_steam_ids)} previously failed IDs now successful")
-    logger.info(f"{len(still_failed)} IDs still failed")
+    print(f"Retry complete! {success_count}/{len(failed_steam_ids)} previously failed IDs now successful")
+    print(f"{len(still_failed)} IDs still failed")
     
     return enriched_games, still_failed
 
@@ -128,18 +123,18 @@ def save_updated_games(enriched_games: List[Dict[str, Any]], output_file: str = 
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(enriched_games, f, indent=2, ensure_ascii=False)
-        logger.info(f"Updated enriched data saved to {output_file}")
+        print(f"Updated enriched data saved to {output_file}")
     except Exception as e:
-        logger.error(f"Failed to save updated data: {e}")
+        print(f"Failed to save updated data: {e}")
 
 def save_still_failed(still_failed: List[int], output_file: str = 'data/failed_steamspy_fetches.json'):
     """Save still failed Steam IDs."""
     try:
         with open(output_file, 'w') as f:
             json.dump(still_failed, f)
-        logger.info(f"Updated failed Steam IDs saved to {output_file}")
+        print(f"Updated failed Steam IDs saved to {output_file}")
     except Exception as e:
-        logger.error(f"Failed to save still failed IDs: {e}")
+        print(f"Failed to save still failed IDs: {e}")
 
 def main():
     """Main function to retry failed SteamSpy fetches."""
@@ -149,13 +144,13 @@ def main():
     # Load failed Steam IDs
     failed_steam_ids = load_failed_steam_ids()
     if not failed_steam_ids:
-        logger.info("No failed Steam IDs to retry")
+        print("No failed Steam IDs to retry")
         return
     
     # Load enriched games
     enriched_games = load_enriched_games()
     if not enriched_games:
-        logger.error("Failed to load enriched games. Exiting.")
+        print("Failed to load enriched games. Exiting.")
         return
     
     # Retry failed fetches

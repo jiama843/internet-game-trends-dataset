@@ -10,14 +10,9 @@ This script:
 """
 
 import json
-import logging
 import duckdb
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 # Database configuration
 DB_FILE = 'game_trends.db'
@@ -30,7 +25,7 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
     Args:
         conn: DuckDB connection
     """
-    logger.info("Creating database schema...")
+    print("Creating database schema...")
 
     # Create GameInfo table
     conn.execute("""
@@ -127,7 +122,7 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
         )
     """)
     
-    logger.info("Schema created successfully")
+    print("Schema created successfully")
 
 def parse_date(date_value: Any) -> Optional[str]:
     """
@@ -163,7 +158,7 @@ def parse_date(date_value: Any) -> Optional[str]:
                 return date_value
         return None
     except Exception as e:
-        logger.debug(f"Could not parse date {date_value}: {e}")
+        # print(f"Could not parse date {date_value}: {e}")
         return None
 
 def extract_owners_estimate(owners_str: str) -> Optional[int]:
@@ -188,7 +183,7 @@ def extract_owners_estimate(owners_str: str) -> Optional[int]:
             return (low + high) // 2
         return None
     except Exception as e:
-        logger.warning(f"Error parsing owners: {owners_str}: {e}")
+        print(f"Error parsing owners: {owners_str}: {e}")
         return None
 
 def populate_game_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
@@ -199,7 +194,7 @@ def populate_game_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, An
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating GameInfo table...")
+    print("Populating GameInfo table...")
     
     game_data = []
     for game in games:
@@ -228,7 +223,7 @@ def populate_game_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, An
         game_data
     )
     
-    logger.info(f"Inserted {len(game_data)} games into GameInfo")
+    print(f"Inserted {len(game_data)} games into GameInfo")
 
 def populate_ratings(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -238,7 +233,7 @@ def populate_ratings(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating Rating table...")
+    print("Populating Rating table...")
     
     rating_data = []
     rating_id = 1
@@ -276,7 +271,7 @@ def populate_ratings(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]
             rating_data
         )
     
-    logger.info(f"Inserted {len(rating_data)} ratings")
+    print(f"Inserted {len(rating_data)} ratings")
 
 def populate_genres(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -286,7 +281,7 @@ def populate_genres(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating Genres table...")
+    print("Populating Genres table...")
     
     genre_data = []
     seen_genre_ids = set()
@@ -317,7 +312,7 @@ def populate_genres(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
             genre_data
         )
     
-    logger.info(f"Inserted {len(genre_data)} genre associations")
+    print(f"Inserted {len(genre_data)} genre associations")
 
 def populate_themes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -327,7 +322,7 @@ def populate_themes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating Themes table...")
+    print("Populating Themes table...")
     
     theme_data = []
     seen_theme_ids = set()
@@ -357,7 +352,7 @@ def populate_themes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
             theme_data
         )
     
-    logger.info(f"Inserted {len(theme_data)} theme associations")
+    print(f"Inserted {len(theme_data)} theme associations")
 
 def populate_game_modes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -367,7 +362,7 @@ def populate_game_modes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating GameModes table...")
+    print("Populating GameModes table...")
     
     mode_data = []
     seen_mode_ids = set()
@@ -397,7 +392,7 @@ def populate_game_modes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
             mode_data
         )
     
-    logger.info(f"Inserted {len(mode_data)} game mode associations")
+    print(f"Inserted {len(mode_data)} game mode associations")
 
 def populate_perspectives(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -407,7 +402,7 @@ def populate_perspectives(conn: duckdb.DuckDBPyConnection, games: List[Dict[str,
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating Perspectives table...")
+    print("Populating Perspectives table...")
     
     perspective_data = []
     seen_perspective_ids = set()
@@ -437,7 +432,7 @@ def populate_perspectives(conn: duckdb.DuckDBPyConnection, games: List[Dict[str,
             perspective_data
         )
     
-    logger.info(f"Inserted {len(perspective_data)} perspective associations")
+    print(f"Inserted {len(perspective_data)} perspective associations")
 
 def populate_steam_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -447,7 +442,7 @@ def populate_steam_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating SteamInfo table...")
+    print("Populating SteamInfo table...")
     
     steam_data = []
     steam_id = 1
@@ -486,7 +481,7 @@ def populate_steam_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
             steam_data
         )
     
-    logger.info(f"Inserted {len(steam_data)} Steam records")
+    print(f"Inserted {len(steam_data)} Steam records")
 
 def populate_epic_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -496,7 +491,7 @@ def populate_epic_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, An
         conn: DuckDB connection
         games: List of game data
     """
-    logger.info("Populating EpicInfo table...")
+    print("Populating EpicInfo table...")
     
     epic_data = []
     epic_id = 1
@@ -541,7 +536,7 @@ def populate_epic_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, An
             epic_data
         )
     
-    logger.info(f"Inserted {len(epic_data)} Epic records")
+    print(f"Inserted {len(epic_data)} Epic records")
 
 def load_games_data(json_file: str) -> List[Dict[str, Any]]:
     """
@@ -553,16 +548,16 @@ def load_games_data(json_file: str) -> List[Dict[str, Any]]:
     Returns:
         List of game dictionaries
     """
-    logger.info(f"Loading data from {json_file}...")
+    print(f"Loading data from {json_file}...")
     
     try:
         with open(json_file, 'r', encoding='utf-8') as f:
             games = json.load(f)
         
-        logger.info(f"Loaded {len(games)} games")
+        print(f"Loaded {len(games)} games")
         return games
     except Exception as e:
-        logger.error(f"Failed to load JSON file: {e}")
+        print(f"Failed to load JSON file: {e}")
         return []
 
 def print_summary(conn: duckdb.DuckDBPyConnection):
@@ -608,11 +603,11 @@ def main():
     # Load games data
     games = load_games_data(JSON_FILE)
     if not games:
-        logger.error("No games data loaded. Exiting.")
+        print("No games data loaded. Exiting.")
         return
     
     # Connect to DuckDB
-    logger.info(f"Connecting to DuckDB database: {DB_FILE}")
+    print(f"Connecting to DuckDB database: {DB_FILE}")
     conn = duckdb.connect(DB_FILE)
     
     try:
@@ -635,16 +630,16 @@ def main():
         # Print summary
         print_summary(conn)
         
-        logger.info("Database population completed successfully!")
+        print("Database population completed successfully!")
         
     except Exception as e:
-        logger.error(f"Error populating database: {e}")
+        print(f"Error populating database: {e}")
         conn.rollback()
         raise
     
     finally:
         conn.close()
-        logger.info("Database connection closed")
+        print("Database connection closed")
 
 if __name__ == "__main__":
     main()
