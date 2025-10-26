@@ -168,7 +168,6 @@ def enrich_igdb_with_epic_data(igdb_games: List[Dict[str, Any]],
         
         # Save progress after each batch
         save_enriched_data(enriched_games, output_file='data/igdb_games_enriched_final.json')
-        save_failed_fetches(failed_fetches, output_file='data/failed_epic_fetches.json')
     
     print(f"Enrichment complete! {epic_enriched_count}/{len(enriched_games)} games enriched with Epic data")
     
@@ -204,7 +203,7 @@ def save_failed_fetches(failed_fetches: List[Dict[str, Any]],
         try:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(failed_fetches, f, indent=2, ensure_ascii=False)
-            print(f"Failed fetches saved to {output_file} ({len(failed_fetches)} API errors)")
+            # print(f"Failed fetches saved to {output_file} ({len(failed_fetches)} API errors)")
         except Exception as e:
             print(f"Failed to save failed fetches: {e}")
 

@@ -11,12 +11,13 @@ This script:
 
 import json
 import duckdb
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 
 # Database configuration
-DB_FILE = 'game_trends.db'
-JSON_FILE = 'igdb_games_enriched_final.json'
+DB_FILE = 'data/internet_game_trends.db'
+JSON_FILE = 'data/igdb_games_enriched_final.json'
 
 def create_schema(conn: duckdb.DuckDBPyConnection):
     """
@@ -33,7 +34,6 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
             id BIGINT PRIMARY KEY,
             name VARCHAR,
             developer VARCHAR,
-            publisher VARCHAR,
             perspective VARCHAR,
             game_engine VARCHAR,
             release_date DATE
@@ -84,18 +84,7 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
             FOREIGN KEY (game_id) REFERENCES GameInfo(id)
         )
     """)
-    
-    # Create Perspectives table
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS Perspectives (
-            id BIGINT PRIMARY KEY,
-            game_id BIGINT NOT NULL,
-            name VARCHAR,
-            description VARCHAR,
-            FOREIGN KEY (game_id) REFERENCES GameInfo(id)
-        )
-    """)
-    
+
     # Create SteamInfo table
     conn.execute("""
         CREATE TABLE IF NOT EXISTS SteamInfo (
@@ -158,7 +147,7 @@ def parse_date(date_value: Any) -> Optional[str]:
                 return date_value
         return None
     except Exception as e:
-        # print(f"Could not parse date {date_value}: {e}")
+        print(f"Could not parse date {date_value}: {e}")
         return None
 
 def extract_owners_estimate(owners_str: str) -> Optional[int]:
@@ -203,23 +192,34 @@ def populate_game_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, An
         if 'player_perspectives' in game and game['player_perspectives']:
             perspective = game['player_perspectives'][0].get('name')
         
+        # Extract developer from involved_companies, we will only have one developer due to initial filtering
+        developer = None
+        if 'involved_companies' in game and game['involved_companies']:
+            for company in game['involved_companies']:
+                if company.get('developer') == True:
+                    developer = company.get('company', {}).get('name')
+
+        # Extract game engine from game_engines
+        game_engine = None
+        if 'game_engines' in game and game['game_engines']:
+            game_engine = game['game_engines'][0].get('name')
+        
         release_date = parse_date(game.get('first_release_date'))
         
         game_data.append((
             game.get('id'),
             game.get('name'),
-            None,  # developer - not in base IGDB data
-            None,  # publisher - not in base IGDB data
+            developer,
             perspective,
-            None,  # game_engine - not in current data
+            game_engine,
             release_date
         ))
     
     # Batch insert
     conn.executemany(
         """INSERT OR IGNORE INTO GameInfo 
-           (id, name, developer, publisher, perspective, game_engine, release_date)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+           (id, name, developer, perspective, game_engine, release_date)
+           VALUES (?, ?, ?, ?, ?, ?)""",
         game_data
     )
     
@@ -297,7 +297,7 @@ def populate_genres(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
             
             if composite_key not in seen_genre_ids:
                 genre_data.append((
-                    genre_id * 1000000 + game_id,  # Create unique ID
+                    genre_id,
                     game_id,
                     genre.get('name'),
                     None  # description not available
@@ -337,7 +337,7 @@ def populate_themes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
             
             if composite_key not in seen_theme_ids:
                 theme_data.append((
-                    theme_id * 1000000 + game_id,  # Create unique ID
+                    theme_id,
                     game_id,
                     theme.get('name'),
                     None  # description not available
@@ -377,7 +377,7 @@ def populate_game_modes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
             
             if composite_key not in seen_mode_ids:
                 mode_data.append((
-                    mode_id * 1000000 + game_id,  # Create unique ID
+                    mode_id,
                     game_id,
                     mode.get('name'),
                     None  # description not available
@@ -393,46 +393,6 @@ def populate_game_modes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
         )
     
     print(f"Inserted {len(mode_data)} game mode associations")
-
-def populate_perspectives(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
-    """
-    Populate Perspectives table.
-    
-    Args:
-        conn: DuckDB connection
-        games: List of game data
-    """
-    print("Populating Perspectives table...")
-    
-    perspective_data = []
-    seen_perspective_ids = set()
-    
-    for game in games:
-        game_id = game.get('id')
-        perspectives = game.get('player_perspectives', [])
-        
-        for perspective in perspectives:
-            perspective_id = perspective.get('id')
-            composite_key = (perspective_id, game_id)
-            
-            if composite_key not in seen_perspective_ids:
-                perspective_data.append((
-                    perspective_id * 1000000 + game_id,  # Create unique ID
-                    game_id,
-                    perspective.get('name'),
-                    None  # description not available
-                ))
-                seen_perspective_ids.add(composite_key)
-    
-    if perspective_data:
-        conn.executemany(
-            """INSERT OR IGNORE INTO Perspectives 
-               (id, game_id, name, description)
-               VALUES (?, ?, ?, ?)""",
-            perspective_data
-        )
-    
-    print(f"Inserted {len(perspective_data)} perspective associations")
 
 def populate_steam_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]):
     """
@@ -468,7 +428,6 @@ def populate_steam_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
             steam_info.get('positive'),
             steam_info.get('negative'),
             initial_price,
-            None  # effective_date - not available in current data
         ))
         steam_id += 1
     
@@ -476,8 +435,8 @@ def populate_steam_info(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
         conn.executemany(
             """INSERT OR IGNORE INTO SteamInfo 
                (id, game_id, owners_est, positive_reviews, negative_reviews, 
-                initial_price_cents, effective_date)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                initial_price_cents)
+               VALUES (?, ?, ?, ?, ?, ?)""",
             steam_data
         )
     
@@ -573,7 +532,7 @@ def print_summary(conn: duckdb.DuckDBPyConnection):
     
     tables = [
         'GameInfo', 'Rating', 'Genres', 'Themes', 
-        'GameModes', 'Perspectives', 'SteamInfo', 'EpicInfo'
+        'GameModes', 'SteamInfo', 'EpicInfo'
     ]
     
     for table in tables:
@@ -600,6 +559,12 @@ def main():
     print("IGDB Games Database Population Tool")
     print("="*60)
     
+    # Delete existing database file if it exists
+    if os.path.exists(DB_FILE):
+        print(f"Deleting existing database file: {DB_FILE}")
+        os.remove(DB_FILE)
+        print("Existing database deleted.")
+    
     # Load games data
     games = load_games_data(JSON_FILE)
     if not games:
@@ -620,7 +585,6 @@ def main():
         populate_genres(conn, games)
         populate_themes(conn, games)
         populate_game_modes(conn, games)
-        populate_perspectives(conn, games)
         populate_steam_info(conn, games)
         populate_epic_info(conn, games)
         

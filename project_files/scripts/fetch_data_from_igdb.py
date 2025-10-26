@@ -18,6 +18,8 @@ CLIENT_ACCESS_TOKEN = os.getenv('TWITCH_ACCESS_TOKEN')
 TWITCH_TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
 IGDB_BASE_URL = 'https://api.igdb.com/v4'
 
+REQUEST_DELAY = 0.05  # Delay between API requests to be respectful
+
 class IGDBController:
     """Class to handle IGDB API authentication and data fetching."""
     
@@ -48,6 +50,39 @@ class IGDBController:
 
         # print(response.text)
         return response.json()
+    
+    def _filter_batch(self, games: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
+        """
+        Filter a batch of games to only include those with exactly one perspective, 
+        one game_engine, and one developer.
+        
+        Args:
+            games (List[Dict]): Batch of game data
+            
+        Returns:
+            List[Dict]: Filtered batch of games
+        """
+        filtered_games = []
+        
+        for game in games:
+            # Check if has exactly one player_perspective
+            perspectives = game.get('player_perspectives', [])
+            has_one_perspective = len(perspectives) == 1
+            
+            # Check if has exactly one game_engine
+            engines = game.get('game_engines', [])
+            has_one_engine = len(engines) == 1
+            
+            # Check if has exactly one developer
+            companies = game.get('involved_companies', [])
+            developers = [c for c in companies if c.get('developer', False)]
+            has_one_developer = len(developers) == 1
+            
+            # Include game if all conditions are met
+            if has_one_perspective and has_one_engine and has_one_developer:
+                filtered_games.append(game)
+        
+        return filtered_games
 
     def fetch_games(self, max_games: int = None, batch_size: int = 500) -> List[Dict[Any, Any]]:
         """
@@ -100,10 +135,18 @@ class IGDBController:
                  genres.name,
                  genres.id,
                  hypes,
+                 game_engines.id,
+                 game_engines.name,
                  external_games.category,
                  external_games.uid,
-                 external_games.external_game_source.name;
-             where (rating_count >= 100 | aggregated_rating_count >= 1) & game_type.id = 0;
+                 external_games.external_game_source.name,
+                 involved_companies.id,
+                 involved_companies.company.name,
+                 involved_companies.developer;
+             where (rating_count >= 100 | aggregated_rating_count >= 1) & game_type.id = 0 
+                 & player_perspectives != null
+                 & game_engines != null
+                 & involved_companies != null;
              limit {current_batch_size};
              offset {offset};
              """
@@ -116,10 +159,13 @@ class IGDBController:
                 print(f"No games returned for offset {offset}")
                 break
             
-            all_games.extend(games_batch)
+            # Filter batch immediately to only include games with exactly 1 perspective, 1 engine, and 1 developer
+            filtered_games_batch = self._filter_batch(games_batch)
+
+            all_games.extend(filtered_games_batch)
             
             # Rate limiting - up to 4 requests per second
-            time.sleep(0.25)
+            time.sleep(REQUEST_DELAY)
             
             # If we got fewer games than requested, we've reached the end
             if len(games_batch) < current_batch_size:
