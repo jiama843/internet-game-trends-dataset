@@ -9,13 +9,14 @@ This script:
 """
 
 import json
+import os
 import requests
 import time
 from typing import List, Dict, Any, Optional
 
 # SteamSpy API configuration
 STEAMSPY_BASE_URL = 'https://steamspy.com/api'
-REQUEST_DELAY = 0.25  # Delay between API requests
+REQUEST_DELAY = 0.05  # Delay between API requests
 
 def load_failed_steam_ids(failed_file: str = 'data/failed_steamspy_fetches.json') -> List[int]:
     """Load failed Steam IDs from JSON file."""
@@ -158,7 +159,19 @@ def main():
     
     # Save updated data
     save_updated_games(updated_games)
-    save_still_failed(still_failed)
+    
+    # Handle the failed fetches file
+    if still_failed:
+        save_still_failed(still_failed)
+    else:
+        # Delete the failed fetches file if all retries succeeded
+        failed_file = 'data/failed_steamspy_fetches.json'
+        try:
+            if os.path.exists(failed_file):
+                os.remove(failed_file)
+                print(f"All retries successful! Deleted {failed_file}")
+        except Exception as e:
+            print(f"Failed to delete {failed_file}: {e}")
     
     print(f"\nRetry complete!")
     print(f"Originally failed: {len(failed_steam_ids)}")
