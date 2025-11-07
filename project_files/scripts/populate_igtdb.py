@@ -58,7 +58,6 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
             id BIGINT PRIMARY KEY,
             game_id BIGINT NOT NULL,
             name VARCHAR,
-            description VARCHAR,
             FOREIGN KEY (game_id) REFERENCES GameInfo(id)
         )
     """)
@@ -69,7 +68,6 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
             id BIGINT PRIMARY KEY,
             game_id BIGINT NOT NULL,
             name VARCHAR,
-            description VARCHAR,
             FOREIGN KEY (game_id) REFERENCES GameInfo(id)
         )
     """)
@@ -80,7 +78,6 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
             id BIGINT PRIMARY KEY,
             game_id BIGINT NOT NULL,
             name VARCHAR,
-            description VARCHAR,
             FOREIGN KEY (game_id) REFERENCES GameInfo(id)
         )
     """)
@@ -94,7 +91,6 @@ def create_schema(conn: duckdb.DuckDBPyConnection):
             positive_reviews INTEGER,
             negative_reviews INTEGER,
             initial_price_cents INTEGER,
-            effective_date DATE,
             FOREIGN KEY (game_id) REFERENCES GameInfo(id)
         )
     """)
@@ -247,8 +243,8 @@ def populate_ratings(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]
                 rating_id,
                 game_id,
                 game.get('aggregated_rating'),
-                'aggregated',
-                'IGDB'
+                'SCALE_100',
+                'IGDB_AGGREGATED'
             ))
             rating_id += 1
         
@@ -258,8 +254,8 @@ def populate_ratings(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]
                 rating_id,
                 game_id,
                 game.get('rating'),
-                'user',
-                'IGDB'
+                'SCALE_100',
+                'IGDB_USER'
             ))
             rating_id += 1
     
@@ -300,15 +296,14 @@ def populate_genres(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
                     genre_id,
                     game_id,
                     genre.get('name'),
-                    None  # description not available
                 ))
                 seen_genre_ids.add(composite_key)
     
     if genre_data:
         conn.executemany(
             """INSERT OR IGNORE INTO Genres 
-               (id, game_id, name, description)
-               VALUES (?, ?, ?, ?)""",
+               (id, game_id, name)
+               VALUES (?, ?, ?)""",
             genre_data
         )
     
@@ -340,15 +335,14 @@ def populate_themes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, Any]]
                     theme_id,
                     game_id,
                     theme.get('name'),
-                    None  # description not available
                 ))
                 seen_theme_ids.add(composite_key)
     
     if theme_data:
         conn.executemany(
             """INSERT OR IGNORE INTO Themes 
-               (id, game_id, name, description)
-               VALUES (?, ?, ?, ?)""",
+               (id, game_id, name)
+               VALUES (?, ?, ?)""",
             theme_data
         )
     
@@ -380,15 +374,14 @@ def populate_game_modes(conn: duckdb.DuckDBPyConnection, games: List[Dict[str, A
                     mode_id,
                     game_id,
                     mode.get('name'),
-                    None  # description not available
                 ))
                 seen_mode_ids.add(composite_key)
     
     if mode_data:
         conn.executemany(
             """INSERT OR IGNORE INTO GameModes 
-               (id, game_id, name, description)
-               VALUES (?, ?, ?, ?)""",
+               (id, game_id, name)
+               VALUES (?, ?, ?)""",
             mode_data
         )
     
