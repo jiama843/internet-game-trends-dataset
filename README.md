@@ -8,7 +8,14 @@ The final curated dataset is located in `IGTDB_Snapshot_Nov_11_11/internet_game_
 
 ## Quick Start
 
-The easiest way to run the workflow is by using the Jupyter notebook (instructions to install jupyter are here: https://jupyter.org/install):
+Ensure python and jupyter notebook are installed:
+- python: https://www.python.org/downloads/
+- jupyter notebook: https://jupyter.org/install
+
+Test that python is linked correctly. The following command should return an output in the format of `Python X.X.X`:
+```
+python --version
+```
 
 1. Clone the repository:
 ```bash
