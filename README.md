@@ -7,6 +7,7 @@ The **Internet Game Trends Dataset** is a curated database containing comprehens
 The final curated dataset is located in `IGTDB_Snapshot_Nov_11_11/internet_game_trends.db` along with intermediate files.
 
 Below is a video containing a walkthrough of the workflow:
+
 https://www.youtube.com/watch?v=gxjK9FYtaIM
 
 ## Quick Start
@@ -127,3 +128,4 @@ If you use this dataset in academic research, please cite:
   note={A comprehensive multi-source video game dataset}
 }
 ```
+
