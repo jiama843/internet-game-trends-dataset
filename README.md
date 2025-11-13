@@ -6,9 +6,14 @@ The **Internet Game Trends Dataset** is a curated database containing comprehens
 
 The final curated dataset is located in `IGTDB_Snapshot_Nov_11_11/internet_game_trends.db` along with intermediate files.
 
+Below is a video containing a walkthrough of the workflow:
+https://www.youtube.com/watch?v=gxjK9FYtaIM
+
 ## Quick Start
 
-Ensure python and jupyter notebook are installed:
+The easiest way to run the workflow is by using the Jupyter notebook. This configuration may require a windows OS.
+
+Ensure python, pip and jupyter notebook are installed:
 - python: https://www.python.org/downloads/
 - jupyter notebook: https://jupyter.org/install
 
@@ -17,24 +22,43 @@ Test that python is linked correctly. The following command should return an out
 python --version
 ```
 
-1. Clone the repository:
+1. Install necessary dependencies
+
+```
+pip install -r requirements.txt
+```
+
+2. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/internet-game-trends-dataset.git
 cd internet-game-trends-dataset
 ```
 
-2. Launch Jupyter Notebook:
+3. Launch Jupyter Notebook:
 ```bash
 jupyter notebook
 ```
 
-3. Open `project_files/workflow.ipynb` from the browser
+4. Open `project_files/workflow.ipynb` from the browser
 
-4. Follow the instructions in the notebook to:
+5. Follow the instructions in the notebook to:
    - Set up your API credentials
    - Run the complete workflow
    - Generate the database
    - Explore sample queries
+
+### Manually running the workflow
+
+If the Jupyter notebook isn't successful, run the following scripts in order:
+
+```
+python scripts/fetch_data_from_igdb.py
+python scripts/enrich_igdb_with_steam.py
+python scripts/retry_failed_steamspy.py # If applicable
+python scripts/enrich_igdb_with_epic_data.py
+python scripts/retry_failed_steamspy.py # If applicable
+python scripts/populate_igtdb.py
+```
 
 ## Data Sources
 
