@@ -102,6 +102,16 @@ python-dotenv>=1.0.0
 requests>=2.31.0
 ```
 
+### Hardware Specifications
+
+Workflow has been successfully run on the following systems:
+
+Windows
+
+- OS: Windows 11 Pro
+- Memory: 32.0 GB
+- Chip: AMD Ryzen 9 7950X 16-Core Processor
+
 ## License
 
 This dataset is released under the **CC0 1.0 Universal (CC0 1.0) Public Domain Dedication**.
