@@ -139,3 +139,29 @@ If you use this dataset in academic research, please cite:
 }
 ```
 
+## Metadata
+
+```
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "DataSet",
+  "name": "Internet Game Trends Database",
+  "url": "<Insert Github link w/ readme>",
+  "version": "2025-12-10",
+  "isAccessibleForFree": true,
+  "keywords": [
+    "Video Games",
+    "Games",
+    "IGDB",
+    "Steam",
+    "EPIC"
+  ],
+  "license": [
+    "https://opendatacommons.org/licenses/odbl/1-0/"
+  ],
+  "citation": "J.Ma 'Internet Game Trends Database’, 2025"
+}
+</script>
+```
+
