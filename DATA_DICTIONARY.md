@@ -231,7 +231,6 @@ GameInfo (1) ──< (many) Rating
 GameInfo (1) ──< (many) Genres
 GameInfo (1) ──< (many) Themes
 GameInfo (1) ──< (many) GameModes
-GameInfo (1) ──< (many) Perspectives
 GameInfo (1) ──── (0..1) SteamInfo
 GameInfo (1) ──── (0..1) EpicInfo
 ```
@@ -249,3 +248,4 @@ GameInfo (1) ──── (0..1) EpicInfo
 | GameModes | IGDB API |
 | SteamInfo | Steam API via SteamSpy |
 | EpicInfo | Epic Games Store GraphQL API |
+
