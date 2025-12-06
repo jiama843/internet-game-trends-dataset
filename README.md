@@ -130,11 +130,11 @@ You can copy, modify, distribute, and perform the work, even for commercial purp
 If you use this dataset in academic research, please cite:
 
 ```bibtex
-@dataset{internet_game_trends_2024,
+@dataset{internet_game_trends_2025,
   title={Internet Game Trends Dataset},
-  author={Your Name},
-  year={2024},
-  url={https://github.com/yourusername/internet-game-trends-dataset},
+  author={John Ma},
+  year={2025},
+  url={https://github.com/jiama843/internet-game-trends-dataset},
   note={A comprehensive multi-source video game dataset}
 }
 ```
@@ -147,7 +147,7 @@ If you use this dataset in academic research, please cite:
   "@context": "https://schema.org/",
   "@type": "DataSet",
   "name": "Internet Game Trends Database",
-  "url": "<Insert Github link w/ readme>",
+  "url": "https://github.com/jiama843/internet-game-trends-dataset",
   "version": "2025-12-10",
   "isAccessibleForFree": true,
   "keywords": [
@@ -164,4 +164,5 @@ If you use this dataset in academic research, please cite:
 }
 </script>
 ```
+
 
